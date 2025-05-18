@@ -1,7 +1,12 @@
-# hcai
-hcai project of meal plan generation
+# HCAI
 
-# Basic setup Linux
-$ python -m venv venv
-$ source venv/bin/activate
-$ pip install -r requirements.txt
+HCAI project of meal plan generation
+
+## Basic setup Linux
+
+```bash
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python src/main.py
+```
