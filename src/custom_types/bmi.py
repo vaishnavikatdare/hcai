@@ -1,7 +1,7 @@
 from openai import BaseModel
 
 
-class Bmi(BaseModel):
+class BmiRecord(BaseModel):
     bmi: float
     bmi_category: str
     base_calorie: int

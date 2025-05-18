@@ -1,14 +1,12 @@
 from pandas import DataFrame
 from common.ollama import get_model_response
-from custom_types.bmi import Bmi
-from custom_types.target import Target
+from custom_types.goal import TargetGoal
 
 
 def generate_meal_plan(
     df: DataFrame,
     diet_type: str,
-    bmi: Bmi,
-    target: Target
+    target: TargetGoal
 ) -> str:
     if diet_type == "vegetarian":
         exclude_keywords = ["Beef", "Chicken", "Pork", "Fish", "Turkey", "Meat"]
@@ -21,7 +19,7 @@ def generate_meal_plan(
     grouped = df.groupby("description")["amount"].sum().reset_index().sort_values(by="amount", ascending=False)
     top_foods = grouped.head(top_n_foods)["description"].tolist()
 
-    prompt_text = f"""You are a certified nutritionist. Generate a 1-day {diet_type} meal plan for someone who is {bmi.bmi_category.lower()} (BMI: {bmi:.1f}) {target.goal_phrase}.
+    prompt_text = f"""You are a certified nutritionist. Generate a 1-day {diet_type} meal plan for someone who is {target.bmi_category.lower()} (BMI: {target.bmi:.1f}) {target.goal_phrase}.
     Use the following foods: {', '.join(top_foods)}. The plan should contain approximately {int(target.calorie_target)} kcal and include:
     - Breakfast
     - Lunch
