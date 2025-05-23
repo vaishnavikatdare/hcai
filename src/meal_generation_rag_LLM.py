@@ -1,3 +1,4 @@
+# RAG + LLM
 import pandas as pd
 from datetime import datetime, timedelta
 from langchain_ollama import OllamaLLM
@@ -51,7 +52,7 @@ def get_tags(macros):
     if macros.get("sodium", 0) < 300: tags.append("Low Sodium")
     return ", ".join(tags)
 
-def sample_unique_meals_with_context(retriever, model, meal_df, used_meals, allergies, meal_kcal_targets):
+def sample_unique_meals_with_context(retriever, model, meal_df, used_meals, allergies, meal_kcal_targets, diet_type):
     meal_data = {}
     for slot in ['breakfast', 'snack1', 'lunch', 'snack2', 'dinner']:
         meal_kcal = meal_kcal_targets.get(slot, 800)
@@ -76,13 +77,23 @@ def sample_unique_meals_with_context(retriever, model, meal_df, used_meals, alle
                 meal_data[slot] = {"meal": response, "context": [prompt]}
                 break
         else:
-            fallback = meal_df[~meal_df['title'].isin(used_meals)]['title']
-            fallback = fallback[fallback.apply(lambda x: is_safe(x, allergies))].sample(1).values[0]
+
+            fallback_pool = meal_df[
+                (meal_df['veg_nonveg'] == diet_type) &
+                (~meal_df['title'].isin(used_meals))
+            ]
+            fallback_pool = fallback_pool[fallback_pool['title'].apply(lambda x: is_safe(x, allergies))]
+            if fallback_pool.empty:
+                fallback = "No safe fallback meal found"
+            else:
+                fallback = fallback_pool.sample(1)['title'].values[0]
+            used_meals.add(fallback)
+            meal_data[slot] = {"meal": fallback, "context": ["fallback"]}
             used_meals.add(fallback)
             meal_data[slot] = {"meal": fallback, "context": ["fallback"]}
     return meal_data
 
-def build_meal_plan_with_rag(start_date, meal_df, retriever, model, allergies, month_csv_path, meal_kcal_targets):
+def build_meal_plan_with_rag(start_date, meal_df, retriever, model, allergies, month_csv_path, meal_kcal_targets, diet_type):
     current_date = start_date
     used_meals = set()
     csv_rows = []
@@ -93,12 +104,12 @@ def build_meal_plan_with_rag(start_date, meal_df, retriever, model, allergies, m
                .to_dict("index")
     )
 
-    for day_num in range(28):
+    for day_num in range(2):
         date_str = current_date.strftime('%Y-%m-%d')
         row = {"Date": date_str}
         totals = {"calories": 0, "protein": 0, "fat": 0, "sodium": 0}
 
-        meals = sample_unique_meals_with_context(retriever, model, meal_df, used_meals, allergies, meal_kcal_targets)
+        meals = sample_unique_meals_with_context(retriever, model, meal_df, used_meals, allergies, meal_kcal_targets, diet_type)
 
         for slot, (time, label) in zip(
             ['breakfast', 'snack1', 'lunch', 'snack2', 'dinner'],
@@ -158,7 +169,7 @@ def run_meal_planner():
     }
 
     month_csv = f"meal_plan_{start_date.strftime('%Y_%m')}.csv"
-    build_meal_plan_with_rag(start_date, meal_df, retriever, model, allergies, month_csv, meal_kcal_targets)
+    build_meal_plan_with_rag(start_date, meal_df, retriever, model, allergies, month_csv, meal_kcal_targets, diet_type)
 
 if __name__ == "__main__":
     run_meal_planner()
