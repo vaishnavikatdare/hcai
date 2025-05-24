@@ -1,3 +1,4 @@
+from rapidfuzz import process, fuzz
 # RAG + LLM
 import pandas as pd
 from datetime import datetime, timedelta
@@ -104,7 +105,7 @@ def build_meal_plan_with_rag(start_date, meal_df, retriever, model, allergies, m
                .to_dict("index")
     )
 
-    for day_num in range(28):
+    for day_num in range(30):
         date_str = current_date.strftime('%Y-%m-%d')
         row = {"Date": date_str}
         totals = {"calories": 0, "protein": 0, "fat": 0, "sodium": 0}
@@ -119,7 +120,15 @@ def build_meal_plan_with_rag(start_date, meal_df, retriever, model, allergies, m
             meal = meals[slot]["meal"]
             row[label] = meal
             row[f"{label} Time"] = time
-            macros = meal_info.get(meal, {"calories": 0, "protein": 0, "fat": 0, "sodium": 0})
+            # Improved fuzzy match using RapidFuzz
+            meal_lc = meal.lower()
+            all_titles = [t.lower() for t in meal_info.keys()]
+            match = process.extractOne(meal_lc, all_titles, scorer=fuzz.token_sort_ratio, score_cutoff=70)
+            if match:
+                matched_title = list(meal_info.keys())[all_titles.index(match[0])]
+                macros = meal_info.get(matched_title, {"calories": 0, "protein": 0, "fat": 0, "sodium": 0})
+            else:
+                macros = {"calories": 0, "protein": 0, "fat": 0, "sodium": 0}
             row[f"{label} Tags"] = get_tags(macros)
             totals["calories"] += macros["calories"]
             totals["protein"] += macros["protein"]
