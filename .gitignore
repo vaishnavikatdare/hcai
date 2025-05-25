@@ -5,6 +5,9 @@ chroma_index/*
 meal_plan_*
 dataset/*
 
+# Remove .db files from the root directory
+*.db
+
 ### Linux ###
 *~
 
