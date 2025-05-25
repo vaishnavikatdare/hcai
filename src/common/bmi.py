@@ -1,29 +1,25 @@
-from custom_types.bmi import BmiRecord
-
-
-def get_bmi_data(height_cm: float, weight_kg: float) -> tuple[float, float, float]:
+def calculate_bmi(weight_kg: float, height_cm: float) -> float:
     height_m = height_cm / 100
-    bmi = weight_kg / (height_m ** 2)
-    min_healthy_weight = 18.5 * height_m ** 2
-    max_healthy_weight = 24.9 * height_m ** 2
+    return round(weight_kg / (height_m ** 2), 2)
 
-    print(f"Your BMI is: {bmi:.1f}")
-    print(f"Healthy weight range for your height: {min_healthy_weight:.1f} kg – {max_healthy_weight:.1f} kg")
 
-    return (bmi, min_healthy_weight, max_healthy_weight)
+def healthy_weight_range(height_cm: float) -> tuple[float, float]:
+    height_m = height_cm / 100
+    return round(18.5 * height_m ** 2, 1), round(24.9 * height_m ** 2, 1)
 
-def get_base_bmi(bmi: float) -> BmiRecord:
+
+def calculate_weight_change_and_goal(weight, bmi, height_cm) -> tuple[str, float]:
+    min_wt, max_wt = healthy_weight_range(height_cm)
     if bmi < 18.5:
-        bmi_category = "Underweight"
-        base_calorie = 2600
-    elif 18.5 <= bmi < 25:
-        bmi_category = "Normal weight"
-        base_calorie = 2200
-    elif 25 <= bmi < 30:
-        bmi_category = "Overweight"
-        base_calorie = 1700
+        return "gain", round(min_wt - weight, 1)
+    elif bmi > 24.9:
+        return "lose", round(weight - max_wt, 1)
     else:
-        bmi_category = "Obese"
-        base_calorie = 1400
+        return "maintain", 0
 
-    return BmiRecord(bmi=bmi, bmi_category=bmi_category, base_calorie=base_calorie)
+def estimate_duration(weight_change, goal) -> float:
+    if goal == "lose":
+        return round(weight_change / 2)
+    elif goal == "gain":
+        return round(weight_change / 1.5)
+    return 0

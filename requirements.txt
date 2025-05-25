@@ -7,3 +7,4 @@ pandas==2.2.3
 pandas-stubs==2.2.3
 ragas==0.2.15
 streamlit==1.45.0
+rapidfuzz==3.13.0

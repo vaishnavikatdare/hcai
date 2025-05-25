@@ -1,15 +1,12 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime
 from langchain_ollama import OllamaLLM
-from vectorstore_builder import build_vectorstore_from_filtered, setup_rag_chain
-from meal_generation_calorie import (
-    calculate_bmi,
-    calculate_weight_change_and_goal,
-    estimate_duration,
-    filter_meals_by_type_and_calories,
-    build_meal_plan_with_rag,
-)
+from src.common.dataset import read_dataset
+from src.common.goal import get_target_goal
+from src.common.meal_plan import build_meal_plan_with_calorie, filter_meals_by_type_and_calories
+from src.common.vectorstore_builder import build_vectorstore_from_filtered, setup_rag_chain
+
 # from meal_generation_rag_LLM import (
 #     calculate_bmi,
 #     calculate_weight_change_and_goal,
@@ -40,11 +37,9 @@ with col5:
 # Generate button
 if st.button("Generate My Plan"):
     allergies_list = [a.strip().lower() for a in allergies.split(",") if a.strip()]
-    bmi = calculate_bmi(weight, height)
-    goal, change = calculate_weight_change_and_goal(weight, bmi, height)
-    duration = estimate_duration(change, goal)
+    target_goal = get_target_goal(height, weight)
 
-    st.metric("BMI", f"{bmi}")
+    st.metric("BMI", f"{target_goal.bmi}")
 
     bmi_info = """<span style='font-size:16px'>
     <b>BMI Explanation</b><br>
@@ -68,22 +63,22 @@ if st.button("Generate My Plan"):
         st.markdown(bmi_info, unsafe_allow_html=True)
         st.markdown(progress_info, unsafe_allow_html=True)
 
-    if goal == "gain":
-        st.warning(f"Goal: Gain {change} kg to reach healthy weight.")
-    elif goal == "lose":
-        st.warning(f"Goal: Lose {change} kg to reach healthy weight.")
+    if target_goal.goal == "gain":
+        st.warning(f"Goal: Gain {target_goal.change} kg to reach healthy weight.")
+    elif target_goal.goal == "lose":
+        st.warning(f"Goal: Lose {target_goal.change} kg to reach healthy weight.")
     else:
         st.success("Goal: Maintain – you're already in a great range!")
 
-    if duration:
-        progress = 1 - (change / (change + duration * (1.5 if goal == "gain" else 2)))
+    if target_goal.duration:
+        progress = 1 - (target_goal.change / (target_goal.change + target_goal.duration * (1.5 if target_goal.goal == "gain" else 2)))
         st.subheader("Progress Tracker")
-        st.progress(progress, text=f"{round(progress * 100)}% toward your {goal} goal")
+        st.progress(progress, text=f"{round(progress * 100)}% toward your {target_goal.goal} goal")
     else:
         st.info("No duration needed – you’re already there!")
 
-    meal_df = pd.read_csv("dataset/meal_dataset.csv")
-    filtered_df = filter_meals_by_type_and_calories(diet_type)
+    meal_df = read_dataset("meal_dataset.csv")
+    filtered_df = filter_meals_by_type_and_calories(meal_df, diet_type)
     model = OllamaLLM(model="mistral")
     vectorstore = build_vectorstore_from_filtered(filtered_df, force_rebuild=True)
     retriever = setup_rag_chain(vectorstore)
@@ -97,7 +92,7 @@ if st.button("Generate My Plan"):
     }
 
     csv_name = f"meal_plan_{start_date.strftime('%Y_%m')}.csv"
-    build_meal_plan_with_rag(start_date, meal_df, retriever, model, allergies_list, csv_name, meal_kcal_targets, diet_type)
+    build_meal_plan_with_calorie(start_date, meal_df, retriever, model, allergies_list, csv_name, meal_kcal_targets, diet_type)
 
     df = pd.read_csv(csv_name)
     st.session_state["meal_df"] = df
