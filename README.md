@@ -10,18 +10,23 @@ pip install -r requirements.txt
 
 ## Run
 
+* Create `dataset` folder in the main path and copy the `epi_r.csv`
+
 ``` bash
 # Generate mean_plan dataset
 python -m src.scripts.dataset
 
-# Run the desired generation file
-python -m src.main
+# Create a new file called .env and add:
+DATASET_DIR="path_to_folder/hcai/dataset"
 
 # Run UI
-python -m streamlit run src/UI.py
+python -m streamlit run src/main.py
 
 # Run UI without opening in browser
-python -m streamlit run src/UI.py --server.headless true
+python -m streamlit run src/main.py --server.headless true
+
+# Run only the llm code without UI
+python -m src.main_llm
 
 ```
 
