@@ -8,3 +8,5 @@ pandas-stubs==2.2.3.250308
 ragas==0.2.15
 streamlit==1.45.0
 rapidfuzz==3.13.0
+langchain-huggingface==0.2.0
+pyjwt==2.10.1
