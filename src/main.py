@@ -7,7 +7,6 @@ from src.ui.sign_up import signup_page
 
 def main():
     st.title("Welcome to the App")
-    st.write(st.session_state)
 
     # Check if the user is logged in
     if "token" in st.session_state and st.session_state["token"]:
