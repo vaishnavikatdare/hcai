@@ -31,7 +31,12 @@ def ui_page():
 
     col4, col5 = st.columns(2)
     with col4:
-        diet_type = st.radio("Diet Preference", ["veg", "non-veg"], horizontal=True)
+        diet_type = st.radio(
+            "Diet Preference", 
+            options=["veg", "non-veg"], 
+            format_func=lambda x: "Vegetarian" if x == "veg" else "Non-Vegetarian", 
+            horizontal=True
+        )
     with col5:
         allergies = st.text_input("Allergies (comma-separated)", "")
 

@@ -18,6 +18,7 @@ python -m src.scripts.dataset
 
 # Create a new file called .env and add:
 DATASET_DIR="path_to_folder/hcai/dataset"
+DAYS_COUNT=30
 
 # Run UI
 python -m streamlit run src/main.py

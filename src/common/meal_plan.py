@@ -1,6 +1,9 @@
+import os
 from rapidfuzz import process, fuzz
 from datetime import timedelta
 import pandas as pd
+
+DAYS_COUNT = int(os.getenv("DAYS_COUNT", 30))  # Default to 30 days if not set
 
 def filter_meals_by_type_and_calories(meal_df, diet_type, max_calories=800):
     return meal_df[(meal_df['veg_nonveg'] == diet_type) & (meal_df['calories'] <= max_calories)].dropna(subset=['title']).reset_index(drop=True)
@@ -80,7 +83,7 @@ def build_meal_plan_with_rag(start_date, meal_df, retriever, model, allergies, m
                .to_dict("index")
     )
 
-    for day_num in range(2):
+    for day_num in range(DAYS_COUNT):
         date_str = current_date.strftime('%Y-%m-%d')
         row = {"Date": date_str}
         totals = {"calories": 0, "protein": 0, "fat": 0, "sodium": 0}
@@ -126,7 +129,7 @@ def build_meal_plan_with_calorie(start_date, meal_df, retriever, model, allergie
                .to_dict("index")
     )
 
-    for day_num in range(30):
+    for day_num in range(DAYS_COUNT):
         date_str = current_date.strftime('%Y-%m-%d')
         row = {"Date": date_str}
         totals = {"calories": 0, "protein": 0, "fat": 0, "sodium": 0}
