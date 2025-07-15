@@ -6,7 +6,7 @@ from src.ui.login import login_page
 from src.ui.sign_up import signup_page
 
 def main():
-    st.title("Welcome to the App")
+    st.title("Welcome to Our Meal Generator")
 
     # Check if the user is logged in
     if "token" in st.session_state and st.session_state["token"]:
@@ -20,10 +20,8 @@ def main():
                 st.rerun()
 
     else:
-        # Navigation options
         page = st.radio("Choose an option:", ["Login", "Sign Up"], horizontal=True)
 
-        # Render the selected page
         if page == "Login":
             login_page()
         elif page == "Sign Up":
