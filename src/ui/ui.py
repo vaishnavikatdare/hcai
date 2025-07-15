@@ -6,6 +6,7 @@ from src.common.dataset import read_dataset
 from src.common.goal import get_target_goal
 from src.common.meal_plan import build_meal_plan_with_calorie, filter_meals_by_type_and_calories
 from src.common.vectorstore_builder import build_vectorstore_from_filtered, setup_rag_chain
+from src.constants.defaults import HEIGHT, WEIGHT
 
 # from meal_generation_rag_LLM import (
 #     calculate_bmi,
@@ -17,15 +18,23 @@ from src.common.vectorstore_builder import build_vectorstore_from_filtered, setu
 
 def ui_page():
 
-    st.title("🥗 Build Your Healthier Self – One Meal at a Time")
-
     # Input
-    st.markdown("### About You")
+    st.markdown("### Provide Your Details")
     col1, col2, col3 = st.columns(3)
     with col1:
-        weight = st.number_input("Weight (kg)", 30.0, 200.0, step=0.5)
+        weight = st.number_input(
+            label=WEIGHT["message"],
+            min_value=WEIGHT["min"],
+            max_value=WEIGHT["max"],
+            step=WEIGHT["step"]
+        )
     with col2:
-        height = st.number_input("Height (cm)", 100.0, 250.0, step=1.0)
+        height = st.number_input(
+            label=HEIGHT["message"],
+            min_value=HEIGHT["min"],
+            max_value=HEIGHT["max"],
+            step=HEIGHT["step"]
+        )
     with col3:
         start_date = st.date_input("Start Date", datetime.today())
 
