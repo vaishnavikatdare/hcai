@@ -3,8 +3,7 @@ import streamlit as st
 from src.common.user import User
 
 def login_page():
-    st.title("🔑 Login")
-    st.markdown("### Welcome Back!")
+    st.title("Login")
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
 
@@ -14,12 +13,12 @@ def login_page():
             user = User()
             token = user.authenticate(username, password)
             if not token:
-                st.error("Invalid username or password.")
+                st.error("Invalid username or password. Please check and try again.")
                 return
             st.session_state["token"] = token
             st.session_state["username"] = username
             st.write(st.session_state)
-            st.success("Logged in successfully!")
+            st.success("Login successful!")
             st.rerun()
         else:
-            st.error("Please enter both username and password.")
+            st.error("Please fill both the fields!")
